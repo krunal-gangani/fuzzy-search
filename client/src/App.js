@@ -33,32 +33,43 @@ function App() {
     }
   };
 
+  const getTodoList = () => {
+    axios
+      .get("http://localhost:5000/get-todo")
+      .then((res) => {
+        setTodo(res.data);
+        setSearchData(res.data);
+        return res.data;
+      })
+      .catch((err) => console.log(err));
+  };
+
   useEffect(() => {
     axios
       .get("http://localhost:5000/get-todo")
       .then((res) => {
-        setSearchData(res.data);
         setTodo(res.data);
+        setSearchData(res.data);
       })
       .catch((err) => console.log(err));
   }, []);
 
-  const addUpdateTodo = () => {
+  const addUpdateTodo = async () => {
     if (isUpdating === "") {
       axios
         .post("http://localhost:5000/save-todo", { text })
-        .then((res) => {
-          console.log(res.data);
+        .then(() => {
           setText("");
+          getTodoList();
         })
         .catch((err) => console.log(err));
     } else {
       axios
         .post("http://localhost:5000/update-todo", { _id: isUpdating, text })
-        .then((res) => {
-          console.log(res.data);
+        .then(() => {
           setText("");
           setUpdating("");
+          getTodoList();
         })
         .catch((err) => console.log(err));
     }
@@ -67,7 +78,7 @@ function App() {
   const deleteTodo = (_id) => {
     axios
       .post("http://localhost:5000/delete-todo", { _id })
-      .then((res) => console.log(res.data))
+      .then(() => getTodoList())
       .catch((err) => console.log(err));
   };
 
@@ -110,14 +121,15 @@ function App() {
         </div>
         <br />
         <div className="list">
-          {searchData.map((item) => (
-            <Item
-              key={item._id}
-              text={item.text}
-              remove={() => deleteTodo(item._id)}
-              update={() => updateTodo(item._id, item.text)}
-            />
-          ))}
+          {searchData?.length &&
+            searchData.map((item) => (
+              <Item
+                key={item._id}
+                text={item.text}
+                remove={() => deleteTodo(item._id)}
+                update={() => updateTodo(item._id, item.text)}
+              />
+            ))}
         </div>
       </div>
     </div>
